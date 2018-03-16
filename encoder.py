@@ -90,14 +90,17 @@ class EncoderForest:
         for i in range(out_dim):
             encoded[:, i] = self.trees[i].encode(X)
         return encoded
-    
-    def decode(self, x):
+
+    def compute_rule_list(self, x):
         out_dim = len(self.trees)
         rule_list = list()
         for i in range(out_dim):
             path_rule = self.trees[i].get_path_rule(self.default_path_rule, x[i])
             rule_list.append(path_rule)
-        
+        return rule_list
+    
+    def decode(self, x):
+        rule_list = self.compute_rule_list(x)
         MCR = self.calculate_MCR(rule_list)
         return MCR.sample()
 
