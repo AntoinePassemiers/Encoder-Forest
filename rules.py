@@ -5,10 +5,6 @@
 import copy
 import numpy as np
 
-import pyximport; pyximport.install()
-pyximport.install(setup_args = {'include_dirs': np.get_include()})
-import c_rules
-
 
 class NodeRule:
 
