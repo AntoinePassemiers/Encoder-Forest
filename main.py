@@ -17,7 +17,7 @@ if __name__ == '__main__':
     X_train, X_test, y_train, _ = train_test_split(X, y, test_size=0.25)
 
     encoder = EncoderForest(500)
-    encoder.fit(X_train, max_depth=5)
+    encoder.fit(X_train, max_depth=10)
     print("end fit")
     encoded = encoder.encode(X_train)
     print("end encode")

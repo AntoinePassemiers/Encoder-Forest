@@ -29,14 +29,18 @@ class CompletelyRandomTree:
             elif len(parent_from_right) == 1:
                 self.parent_ids[i] = parent_from_right[0]
                 self.operators[i] = 'gt'
+        self.leaf_to_node = np.where(tree.feature == -2)[0]
+        self.node_to_leaf = {node_id: leaf_id for leaf_id, node_id in enumerate(self.leaf_to_node)}
+        self.n_leafs = len(self.leaf_to_node)
     
     def encode(self, X):
-        return self.tree.apply(X)
+        node_ids = self.tree.apply(X)
+        return [self.node_to_leaf[node_id] for node_id in node_ids]
     
     def get_path_rule(self, default_path_rule, leaf_id):
         path_rule = copy.deepcopy(default_path_rule)
         tree = self.tree.tree_
-        current_id = leaf_id
+        current_id = self.leaf_to_node[leaf_id]
         while current_id != 0:
             attribute = tree.feature[self.parent_ids[current_id]]
             bound = tree.threshold[self.parent_ids[current_id]]
@@ -71,17 +75,11 @@ class EncoderForest:
         for i in range(self.out_size):
             self.trees.append(CompletelyRandomTree(forest.estimators_[i], self.n_attributes))
         
-        self.global_lower_bounds = np.min(X, axis=0)
-        self.global_upper_bounds = np.max(X, axis=1)
+        self.global_lower_bounds = np.min(X, axis=0).astype(np.double)
+        self.global_upper_bounds = np.max(X, axis=0).astype(np.double)
 
         self.default_path_rule = PathRule(self.n_attributes)
-        for i in range(self.n_attributes):
-            node_rule = NodeRule(i, -np.inf, 'gt')
-            node_rule.op_left = NodeRule.LE
-            node_rule.op_right = NodeRule.LE
-            node_rule.lower_bound = self.global_lower_bounds[i]
-            node_rule.upper_bound = self.global_upper_bounds[i]
-            self.default_path_rule.add(node_rule)
+        self.default_path_rule.set_global_bounds(self.global_lower_bounds, self.global_upper_bounds)
     
     def encode(self, X):
         n_samples = X.shape[0]
@@ -102,7 +100,7 @@ class EncoderForest:
     def decode(self, x):
         rule_list = self.compute_rule_list(x)
         MCR = self.calculate_MCR(rule_list)
-        return MCR.sample()
+        return MCR.sample(sampling='mean')
 
     def calculate_MCR(self, path_rule_list):
         MCR = copy.deepcopy(self.default_path_rule)

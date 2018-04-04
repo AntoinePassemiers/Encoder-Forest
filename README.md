@@ -11,7 +11,7 @@ is basically a function mapping input vectors to leafs. As a result, latent vari
 leaf identifier obtained by feeding tree i with the input vector.
 
 A decision tree basically subdivides the input space into hyper-parallelepipeds: each decision leaf
-corresponds to a unique hyper-parallelepiped. The rules used to obtained the latter can easily be
+corresponds to a unique hyper-parallelepiped. The rules used to obtain the latter can easily be
 retrieved by going from the leaf to the root and saving all the split functions located on the
 path to the root. Because the n embedding trees have received the same input vector to produce
 the latent variables, we know that this original vector is located in the intersection of the n
@@ -25,7 +25,7 @@ in such a way that the volume of the intersection is minimized for every combina
 
 ![alt text](imgs/1.png)
 
-Original images and their reconstructed versions using an unsupervised eForest (500 shallow trees of depth 5)
+Original images and their reconstructed versions using an unsupervised eForest (500 shallow trees of depth 10)
 
 ## How to use it
 

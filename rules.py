@@ -5,6 +5,10 @@
 import copy
 import numpy as np
 
+import pyximport; pyximport.install()
+pyximport.install(setup_args = {'include_dirs': np.get_include()})
+import c_rules
+
 
 class NodeRule:
 
@@ -72,15 +76,27 @@ class PathRule:
         self.n_attributes = n_attributes
         self.node_rules = [NodeRule(i, -np.inf, 'gt') for i in range(n_attributes)]
     
+    def set_global_bounds(self, lower_bounds, upper_bounds):
+        for i in range(self.n_attributes):
+            node_rule = NodeRule(i, -np.inf, 'gt')
+            node_rule.op_left = NodeRule.LE
+            node_rule.op_right = NodeRule.LE
+            node_rule.lower_bound = lower_bounds[i]
+            node_rule.upper_bound = upper_bounds[i]
+            self.add(node_rule)
+    
     def add(self, node_rule):
         assert(isinstance(node_rule, NodeRule))
         j = node_rule.attribute
         self.node_rules[j] = self.node_rules[j].__and__(node_rule)
     
-    def sample(self):
+    def sample(self, sampling='mean'):
         sample = np.empty(self.n_attributes)
         for i, rule in enumerate(self):
-            sample[i] = np.random.uniform(rule.lower_bound, rule.upper_bound)
+            if sampling == 'mean':
+                sample[i] = (rule.lower_bound + rule.upper_bound) / 2.
+            else:
+                sample[i] = np.random.uniform(rule.lower_bound, rule.upper_bound)
         return sample
     
     def compute_volume(self):
@@ -88,7 +104,7 @@ class PathRule:
         for i in range(self.n_attributes):
             node_rule = self.node_rules[i]
             log_volume += (node_rule.upper_bound - node_rule.lower_bound)
-            assert(node_rule.upper_bound > node_rule.lower_bound)
+            assert(node_rule.upper_bound >= node_rule.lower_bound)
         return log_volume
     
     def __len__(self):
