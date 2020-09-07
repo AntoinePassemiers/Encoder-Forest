@@ -7,11 +7,11 @@ from encoder import EncoderForest
 
 if __name__ == '__main__':
 
-    from sklearn.datasets import fetch_mldata, load_digits
+    from sklearn.datasets import fetch_openml, load_digits
     from sklearn.model_selection import train_test_split
     import matplotlib.pyplot as plt
 
-    mnist = fetch_mldata("MNIST original")
+    mnist = fetch_openml('mnist_784')
     X, y = mnist.data, mnist.target
     X = X.reshape(X.shape[0], -1)
     X_train, X_test, y_train, _ = train_test_split(X, y, test_size=0.25)
